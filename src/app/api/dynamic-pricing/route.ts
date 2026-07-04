@@ -16,12 +16,16 @@ export async function GET() {
     const today = new Date();
 
     for (const product of products) {
-      const expiryDate = new Date(product.expiryDate);
+      if (!product.expiryDate) {
+  continue;
+}
 
-      const daysLeft = Math.ceil(
-        (expiryDate.getTime() - today.getTime()) /
-          (1000 * 60 * 60 * 24)
-      );
+const expiryDate = new Date(product.expiryDate as Date);
+
+const daysLeft = Math.ceil(
+  (expiryDate.getTime() - today.getTime()) /
+  (1000 * 60 * 60 * 24)
+);
 
       let discount = 0;
 
