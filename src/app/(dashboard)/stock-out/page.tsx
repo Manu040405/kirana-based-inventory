@@ -4,14 +4,15 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
-import { TrendingDown, Loader2 } from "lucide-react"
-
+import { Html5QrcodeScanner } from "html5-qrcode";
+import { TrendingDown, Loader2, ScanLine } from "lucide-react"
 interface Product {
     _id: string;
     name: string;
     unit: string;
     price: number;
     currentStock: number;
+     barcode?: string;
 }
 
 export default function StockOutPage() {
@@ -20,7 +21,7 @@ export default function StockOutPage() {
     const [quantity, setQuantity] = useState("");
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
-
+    const [barcode, setBarcode] = useState("");
     useEffect(() => {
         fetch('/api/products')
             .then(res => res.json())
@@ -35,7 +36,33 @@ export default function StockOutPage() {
     }, []);
 
     const selectedProductObj = products.find(p => p._id === selectedProduct);
+    const startScanner = () => {
+    const scanner = new Html5QrcodeScanner(
+        "reader",
+        {
+            fps: 10,
+            qrbox: 250,
+        },
+        false
+    );
 
+    scanner.render(
+        (decodedText) => {
+            setBarcode(decodedText);
+
+            const found = products.find(
+                (p: any) => p.barcode === decodedText
+            );
+
+            if (found) {
+                setSelectedProduct(found._id);
+            }
+
+            scanner.clear();
+        },
+        () => {}
+    );
+};
     const handleSubmit = async () => {
         if (!selectedProduct || !quantity) return alert("Please fill all fields");
 
@@ -89,6 +116,22 @@ export default function StockOutPage() {
                     ) : (
                         <>
                             <div className="space-y-2">
+                                <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                    Scan Barcode
+                                </label>
+
+                            <div className="flex gap-2">
+                                <Input placeholder="Barcode"value={barcode}readOnly/>
+
+                                    <Button type="button" onClick={startScanner}>
+                                    <ScanLine className="h-4 w-4 mr-2" />
+                                        Scan
+                                    </Button>
+                            </div>
+
+                            <div id="reader"></div>
+                            </div>
                                 <label className="text-sm font-medium">Select Product</label>
                                 <select
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
