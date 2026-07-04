@@ -9,8 +9,8 @@ export async function GET() {
     const products = await Product.find();
 
     const mlResponse = await fetch(
-      "http://127.0.0.1:8000/forecast"
-    );
+  "https://kirana-based-inventory-production.up.railway.app/forecast"
+);
 
     const mlData = await mlResponse.json();
 
